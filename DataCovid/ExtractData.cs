@@ -7,15 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DataCovid.Resumen;
 
 namespace DataCovid
 {
     public class ExtractData
     {
-        public async Task GetDataAsync()
-        {
 
-            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
+        public async Task<List<string[]>> GetDataAsync(string url)
+        {
             HttpClient client = new HttpClient();
             byte[] buffer = await client.GetByteArrayAsync(url);
             Stream stream = new MemoryStream(buffer);
@@ -24,14 +24,26 @@ namespace DataCovid
             {
                 while (reader.Peek() >= 0)
                 {
-                    string? fila=reader.ReadLine();
-                    if(!string.IsNullOrEmpty(fila))
+                    string? fila = reader.ReadLine();
+                    if (!string.IsNullOrEmpty(fila))
                     {
                         string[] filaSeparada = fila.Split(',');
                         listado.Add(filaSeparada);
-                    }                    
+                    }
                 }
             }
+
+            return listado;
+        }
+
+
+
+        public async Task GetDataActivos()
+        {
+
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
+
+            var listado = await GetDataAsync(url);
 
             var primeraFila = listado[0];
 
@@ -74,6 +86,94 @@ namespace DataCovid
 
         }
 
+
+        public async Task GetDataResumen()
+        {
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv";
+            var listado = await GetDataAsync(url);
+            var primeraFila = listado[0];
+
+            ResumenCovid resumenCovid = new ResumenCovid();
+            resumenCovid.UpdatedAt = primeraFila[primeraFila.Length - 1];
+
+            List<DatosResumen> datosResumen = new List<DatosResumen>();
+
+            for(int i=1;i<listado.Count; i++)
+            {
+                DatosResumen datoResumen = new DatosResumen();
+                var fila = listado[i];
+                datoResumen.Item = fila[0];
+
+                List<FechaValor> listadoFechaValor = new List<FechaValor>();
+                for(int j = 1; j < fila.Length; j++)
+                {
+                    FechaValor fechaValor = new FechaValor();
+                    fechaValor.Fecha = primeraFila[j];
+                    fechaValor.Valor = ProcesarTexto(fila[j]);
+
+                    listadoFechaValor.Add(fechaValor);
+                }
+
+                datoResumen.Cantidad = listadoFechaValor;
+
+                datosResumen.Add(datoResumen);
+            }
+
+            List<DatosResumen> resumenAux = new List<DatosResumen>();
+
+            var casosTotales = datosResumen[1];
+            casosTotales.Cantidad.RemoveRange(0, casosTotales.Cantidad.Count-1);
+            resumenAux.Add(casosTotales); //casos totales
+
+            var fallecidos = (DatosResumen) datosResumen[3].Clone();
+            var fallecidosDiario = (DatosResumen) datosResumen[3].Clone();
+
+
+            
+
+            List<FechaValor> listFall  = new List<FechaValor>();
+
+            
+            for (int i = 0;i < fallecidosDiario.Cantidad.Count; i++)
+            {
+                if (i == 0)
+                {
+                    listFall.Add(fallecidosDiario.Cantidad[0]);
+                }
+                else
+                {
+                    var hoy = fallecidosDiario.Cantidad[i].Valor;
+                    var ayer = fallecidosDiario.Cantidad[i-1].Valor;
+
+                    var cantidad = hoy - ayer;
+
+                    FechaValor fv = new FechaValor();
+                    fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
+                    fv.Valor = cantidad;
+
+                    listFall.Add(fv);
+                }
+            }
+
+            fallecidosDiario.Item = fallecidosDiario.Item + " diario";
+            fallecidosDiario.Cantidad = listFall;
+
+            resumenAux.Add(fallecidosDiario);
+
+            fallecidos.Cantidad.RemoveRange(0, fallecidos.Cantidad.Count - 1);
+            resumenAux.Add(fallecidos);
+
+            resumenAux.Add(datosResumen[4]); // casos activos
+            resumenAux.Add(datosResumen[6]); // casos nuevos totales
+
+
+            resumenCovid.Data = resumenAux;
+
+            var json = JsonSerializer.Serialize(resumenCovid);
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            File.WriteAllText(path + "dataResumen.json", json);
+
+        }
 
         public static int ProcesarTexto(string valor)
         {

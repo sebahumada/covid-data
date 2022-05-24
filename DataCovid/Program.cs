@@ -8,7 +8,8 @@ namespace DataCovid // Note: actual namespace depends on the project name.
         {
             Console.WriteLine("Hello World!");
             var x = new ExtractData();
-            x.GetDataAsync().Wait();
+            //x.GetDataActivos().Wait();
+            x.GetDataResumen().Wait();
         }
     }
 }
