@@ -82,7 +82,8 @@ namespace DataCovid
             var path = @"C:\Proyectos\Covid\TransformData\Output\";
             File.WriteAllText(path+"data.json", json);
 
-            
+
+
 
         }
 
@@ -169,10 +170,20 @@ namespace DataCovid
 
             resumenCovid.Data = resumenAux;
 
+
+
+            UpdatedAt updated = new UpdatedAt();
+            updated.UpdatedDate = resumenCovid.UpdatedAt;
+            updated.ProcessDate = DateTime.Now;
+
+
             var json = JsonSerializer.Serialize(resumenCovid);
             var path = @"C:\Proyectos\Covid\TransformData\Output\";
             File.WriteAllText(path + "dataResumen.json", json);
 
+            var jsonUpdateAt = JsonSerializer.Serialize(updated);
+            
+            File.WriteAllText(path + "dataUpdateAt.json", jsonUpdateAt);
         }
 
         public static int ProcesarTexto(string valor)
