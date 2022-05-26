@@ -128,14 +128,17 @@ namespace DataCovid
 
             var fallecidos = (DatosResumen) datosResumen[3].Clone();
             var fallecidosDiario = (DatosResumen) datosResumen[3].Clone();
+            var fallecidosDiarioCorregido = (DatosResumen)datosResumen[19].Clone();
 
 
-            
+
 
             List<FechaValor> listFall  = new List<FechaValor>();
-
             
-            for (int i = 0;i < fallecidosDiario.Cantidad.Count; i++)
+            //Dia del cambio de método para informar fallecidos
+            string fechaCorreccionFallecidos = "2022-03-21";
+
+            for (int i = 0; i < fallecidosDiario.Cantidad.Count; i++)
             {
                 if (i == 0)
                 {
@@ -143,18 +146,41 @@ namespace DataCovid
                 }
                 else
                 {
-                    var hoy = fallecidosDiario.Cantidad[i].Valor;
-                    var ayer = fallecidosDiario.Cantidad[i-1].Valor;
 
-                    var cantidad = hoy - ayer;
+                    //Se realiza corrección dicho dia para concordancia con datos oficiales
+                    if (fallecidosDiario.Cantidad[i].Fecha.Equals(fechaCorreccionFallecidos))
+                    {
+                        var hoy = fallecidosDiarioCorregido.Cantidad[i].Valor;
+                        var ayer = fallecidosDiario.Cantidad[i - 1].Valor;
 
-                    FechaValor fv = new FechaValor();
-                    fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
-                    fv.Valor = cantidad;
+                        var cantidad = hoy - ayer;
 
-                    listFall.Add(fv);
+                        FechaValor fv = new FechaValor();
+                        fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
+                        fv.Valor = cantidad;
+
+                        listFall.Add(fv);
+                    }
+                    else
+                    {
+                        var hoy = fallecidosDiario.Cantidad[i].Valor;
+                        var ayer = fallecidosDiario.Cantidad[i - 1].Valor;
+
+                        var cantidad = hoy - ayer;
+
+                        FechaValor fv = new FechaValor();
+                        fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
+                        fv.Valor = cantidad;
+
+                        listFall.Add(fv);
+                    }
                 }
+
+
+
+
             }
+            
 
             fallecidosDiario.Item = fallecidosDiario.Item + " diario";
             fallecidosDiario.Cantidad = listFall;
