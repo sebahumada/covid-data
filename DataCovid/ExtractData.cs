@@ -36,6 +36,99 @@ namespace DataCovid
             return listado;
         }
 
+        public async Task GetRegionComuna()
+        {
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
+
+            var listado = await GetDataAsync(url);
+
+            List<RegionComuna> regionComunas = new List<RegionComuna>();
+
+            for(int i=1;i< listado.Count; i++)
+            {
+                var fila = listado[i];
+                RegionComuna regionComuna = new RegionComuna();
+                regionComuna.Region = fila[0];
+                regionComuna.CodRegion = fila[1];
+                regionComuna.Comuna = fila[2];
+                regionComuna.CodComuna = fila[3];
+                regionComuna.Poblacion = ProcesarTexto(fila[4]);
+
+                regionComunas.Add(regionComuna);
+            }
+
+            
+
+
+            string json = JsonSerializer.Serialize(regionComunas);
+            string path = @"C:\Proyectos\Covid\TransformData\Output\";
+            File.WriteAllText(path + "dataRegionComuna.json", json);
+
+
+            var quitaRepetidos = (from item in regionComunas
+                                  group item by new { item.Region, item.CodRegion } into g
+                                  select new Region()
+                                  {
+                                      CodRegion = g.Key.CodRegion,
+                                      Nombre = g.Key.Region
+                                  }
+                                  ).ToList();
+
+
+            string jsonRegiones = JsonSerializer.Serialize(quitaRepetidos);            
+            File.WriteAllText(path + "dataListaRegiones.json", jsonRegiones);
+
+        }
+
+
+        //Activos Informe Epidemiologico
+        public async Task GetActivosRegionales()
+        {
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
+
+            var listado = await GetDataAsync(url);
+
+            var primeraFila = listado[0];
+
+            RespuestaActivosRegion respuestaActivosRegion = new RespuestaActivosRegion();
+
+            respuestaActivosRegion.UpdatedAt = primeraFila[primeraFila.Length - 1];
+
+            List<ActivosRegion> listaActivosRegion = new List<ActivosRegion>();
+
+
+            for (int i = 1; i < listado.Count; i++)
+            {
+                var fila = listado[i];
+
+                if (fila[2].Equals("Total"))
+                {
+                    ActivosRegion activos = new ActivosRegion();
+                    activos.CodRegion = fila[1];
+
+                    List<FechaValor> listadoFechaValor = new List<FechaValor>();
+                    for (int j = 5; j < fila.Length; j++)
+                    {
+                        FechaValor fechaValor = new FechaValor();
+                        fechaValor.Fecha = primeraFila[j];
+                        fechaValor.Valor = ProcesarTexto(fila[j]);
+
+                        listadoFechaValor.Add(fechaValor);
+                    }
+
+                    activos.Data = listadoFechaValor;
+                    listaActivosRegion.Add(activos);
+                }
+
+            }
+
+            respuestaActivosRegion.Lista = listaActivosRegion;
+
+            string json = JsonSerializer.Serialize(respuestaActivosRegion);
+            string path = @"C:\Proyectos\Covid\TransformData\Output\";
+            File.WriteAllText(path + "dataActivosRegion.json", json);
+        }
+
 
 
         public async Task GetDataActivos()
