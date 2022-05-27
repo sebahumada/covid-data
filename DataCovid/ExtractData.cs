@@ -137,6 +137,12 @@ namespace DataCovid
             
             //Dia del cambio de método para informar fallecidos
             string fechaCorreccionFallecidos = "2022-03-21";
+            //Correccion
+            string c1 = "2020-07-17";
+            int cantc1 = 98;
+
+            string c2 = "2020-06-07";
+            int cantc2 = 96;
 
             for (int i = 0; i < fallecidosDiario.Cantidad.Count; i++)
             {
@@ -158,6 +164,22 @@ namespace DataCovid
                         FechaValor fv = new FechaValor();
                         fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
                         fv.Valor = cantidad;
+
+                        listFall.Add(fv);
+                    }
+                    else if (fallecidosDiario.Cantidad[i].Fecha.Equals(c1))
+                    {
+                        FechaValor fv = new FechaValor();
+                        fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
+                        fv.Valor = cantc1;
+
+                        listFall.Add(fv);
+                    }
+                    else if (fallecidosDiario.Cantidad[i].Fecha.Equals(c2))
+                    {
+                        FechaValor fv = new FechaValor();
+                        fv.Fecha = fallecidosDiario.Cantidad[i].Fecha;
+                        fv.Valor = cantc2;
 
                         listFall.Add(fv);
                     }
