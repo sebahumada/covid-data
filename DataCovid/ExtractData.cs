@@ -96,7 +96,7 @@ namespace DataCovid
 
             List<ActivosRegion> listaActivosRegion = new List<ActivosRegion>();
 
-
+            
             for (int i = 1; i < listado.Count; i++)
             {
                 var fila = listado[i];
@@ -124,9 +124,42 @@ namespace DataCovid
 
             respuestaActivosRegion.Lista = listaActivosRegion;
 
+            List<FechaValor> listaActivosNacional = new List<FechaValor>();
+
+            for(int i = 5; i < primeraFila.Length; i++)
+            {
+                FechaValor fechaValor = new FechaValor();
+                fechaValor.Fecha = primeraFila[i];
+
+                int num = 0;
+                foreach(var reg in listaActivosRegion)
+                {
+                    var data = reg.Data;
+
+                    foreach(var fechaData in data)
+                    {
+                        if (fechaData.Fecha.Equals(primeraFila[i]))
+                        {
+                            num += fechaData.Valor;
+                        }
+                    }
+                }
+
+                fechaValor.Valor = num;
+                listaActivosNacional.Add(fechaValor);
+                
+            }
+
+            ActivosNacional activosNacional = new ActivosNacional();
+            activosNacional.UpdatedAt = primeraFila[primeraFila.Length - 1];
+            activosNacional.Lista = listaActivosNacional;
+
             string json = JsonSerializer.Serialize(respuestaActivosRegion);
             string path = @"C:\Proyectos\Covid\TransformData\Output\";
             File.WriteAllText(path + "dataActivosRegion.json", json);
+
+            string jsonNacional = JsonSerializer.Serialize(activosNacional);            
+            File.WriteAllText(path + "dataActivosNacional.json", jsonNacional);
         }
 
 
