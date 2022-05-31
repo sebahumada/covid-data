@@ -6,12 +6,15 @@ namespace DataCovid // Note: actual namespace depends on the project name.
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("COVID INFO CL");
+            Console.WriteLine("COVID INFO CL - Inicio: "+DateTime.Now.ToString());
             var x = new ExtractData();
-            //x.GetDataActivos().Wait();
+            
             x.GetDataResumen().Wait();
             x.GetActivosRegionales().Wait();
             x.GetRegionComuna().Wait();
+            x.GetActivosPorComuna().Wait();
+
+            Console.WriteLine("FIN PROCESO: " + DateTime.Now.ToString());
         }
     }
 }

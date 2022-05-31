@@ -13,6 +13,8 @@ namespace DataCovid
 {
     public class ExtractData
     {
+        public static List<string[]>? datosActivosPorComuna;
+
 
         public async Task<List<string[]>> GetDataAsync(string url)
         {
@@ -36,11 +38,40 @@ namespace DataCovid
             return listado;
         }
 
+        
+        public async Task<List<string[]>> GetDataActivosPorComuna()
+        {
+            if (datosActivosPorComuna != null && datosActivosPorComuna.Count > 0)
+            {
+                return datosActivosPorComuna;
+            }
+
+
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
+            datosActivosPorComuna = await GetDataAsync(url);
+
+
+            var primeraFila = datosActivosPorComuna[0];
+
+            UpdatedAt updated = new UpdatedAt();
+            updated.UpdatedDate = primeraFila[primeraFila.Length - 1];
+            updated.ProcessDate = DateTime.Now;
+
+
+           
+            var path = @"C:\Proyectos\Covid\TransformData\Output\"; 
+            var jsonUpdateAt = JsonSerializer.Serialize(updated);
+
+            File.WriteAllText(path + "dataActivosComunaUpdateAt.json", jsonUpdateAt);
+
+            return datosActivosPorComuna;
+        }
+
+
+
         public async Task GetRegionComuna()
         {
-            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
-
-            var listado = await GetDataAsync(url);
+            var listado = await GetDataActivosPorComuna();
 
             List<RegionComuna> regionComunas = new List<RegionComuna>();
 
@@ -82,11 +113,53 @@ namespace DataCovid
 
 
         //Activos Informe Epidemiologico
+        public async Task GetActivosPorComuna()
+        {
+            var listado = await GetDataActivosPorComuna();
+
+            var primeraFila = listado[0];
+
+            RespuestaActivosComuna respuestaActivosComuna = new RespuestaActivosComuna();
+            respuestaActivosComuna.UpdatedAt = primeraFila[primeraFila.Length - 1];
+
+            List<ActivosComuna> listaActivosComuna = new List<ActivosComuna>();
+
+            for (int i = 1; i < listado.Count; i++)
+            {
+                var fila = listado[i];
+
+                if (!string.IsNullOrEmpty(fila[3]))
+                {
+                    ActivosComuna activos = new ActivosComuna();
+                    activos.C = fila[3];
+
+                    List<FechaValorComuna> listadoFechaValor = new List<FechaValorComuna>();
+                    for (int j = 5; j < fila.Length; j++)
+                    {
+                        FechaValorComuna fechaValor = new FechaValorComuna();
+                        fechaValor.F = primeraFila[j];
+                        fechaValor.V = ProcesarTexto(fila[j]);
+
+                        listadoFechaValor.Add(fechaValor);
+                    }
+
+                    activos.D = listadoFechaValor;
+                    listaActivosComuna.Add(activos);
+                }
+
+            }
+
+            respuestaActivosComuna.Lista = listaActivosComuna;
+
+            string json = JsonSerializer.Serialize(respuestaActivosComuna);
+            string path = @"C:\Proyectos\Covid\TransformData\Output\";
+            File.WriteAllText(path + "dataActivosComuna.json", json);
+        }
+
+
         public async Task GetActivosRegionales()
         {
-            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
-
-            var listado = await GetDataAsync(url);
+            var listado = await GetDataActivosPorComuna();
 
             var primeraFila = listado[0];
 
@@ -164,54 +237,7 @@ namespace DataCovid
 
 
 
-        public async Task GetDataActivos()
-        {
-
-            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto19/CasosActivosPorComuna.csv";
-
-            var listado = await GetDataAsync(url);
-
-            var primeraFila = listado[0];
-
-            List<DatoCovid> listadoCovid = new List<DatoCovid>();
-            
-
-            for (int i = 1; i< listado.Count; i++)
-            {
-                var fila = listado[i];
-                DatoCovid dc = new DatoCovid();
-
-                //dc.Region = fila[0];
-                //dc.Reg = fila[1];
-                //dc.Comuna = fila[2];
-                dc.Comuna = fila[3];
-                //dc.Poblacion = ProcesarTexto(fila[4]);
-                //Recorrido dentro de la fila
-                List<int> listaFechaCantidad = new List<int>();
-                for (int j = 5; j < fila.Length; j++)
-                {
-                    //FechaCantidad fc = new FechaCantidad();
-                    //fc.Dt = primeraFila[j];
-                    //fc.Num = ProcesarTexto(fila[j]);
-                    listaFechaCantidad.Add(ProcesarTexto(fila[j]));
-                }
-
-                dc.Casos = listaFechaCantidad;
-
-                listadoCovid.Add(dc);
-            }
-            
-            Respuesta r=new Respuesta();
-            r.UpdateAt = primeraFila[primeraFila.Length-1];
-            r.Data = listadoCovid;
-            var json = JsonSerializer.Serialize(r);
-            var path = @"C:\Proyectos\Covid\TransformData\Output\";
-            File.WriteAllText(path+"data.json", json);
-
-
-
-
-        }
+        
 
 
         public async Task GetDataResumen()
