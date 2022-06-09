@@ -9,6 +9,8 @@ namespace DataCovid.Resumen
     public class ActivosRegion
     {
         public string CodRegion { get; set; }
+
+        public int Poblacion { get; set; }
         public List<FechaValor> Data { get; set; }
     }
 }

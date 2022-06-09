@@ -178,6 +178,8 @@ namespace DataCovid
                 {
                     ActivosRegion activos = new ActivosRegion();
                     activos.CodRegion = fila[1];
+                    activos.Poblacion = ProcesarTexto(fila[4]);
+
 
                     List<FechaValor> listadoFechaValor = new List<FechaValor>();
                     for (int j = 5; j < fila.Length; j++)
