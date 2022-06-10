@@ -15,6 +15,8 @@ namespace DataCovid
     {
         public static List<string[]>? datosActivosPorComuna;
 
+        public static List<string[]>? datosFallecidosPorComuna;
+
 
         public async Task<List<string[]>> GetDataAsync(string url)
         {
@@ -38,7 +40,41 @@ namespace DataCovid
             return listado;
         }
 
-        
+
+        public async Task<List<string[]>> GetDataFallecidosPorComuna()
+        {
+            if(datosFallecidosPorComuna !=null && datosFallecidosPorComuna.Count > 0)
+            {
+                return datosFallecidosPorComuna;
+            }
+
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto38/CasosFallecidosPorComuna.csv";
+            datosFallecidosPorComuna = await GetDataAsync(url);
+
+            var primeraFila = datosFallecidosPorComuna[0];
+
+            UpdatedAt updated = new UpdatedAt();
+            updated.UpdatedDate = primeraFila[primeraFila.Length - 1];
+            updated.ProcessDate = DateTime.Now;
+
+
+
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            var jsonUpdateAt = JsonSerializer.Serialize(updated);
+
+            File.WriteAllText(path + "dataFallecidosComunaUpdateAt.json", jsonUpdateAt);
+
+            return datosFallecidosPorComuna;
+
+        }
+
+        public async Task GetFallecidosPorComuna()
+        {
+            var listado = await GetDataFallecidosPorComuna();
+        }
+
+
+
         public async Task<List<string[]>> GetDataActivosPorComuna()
         {
             if (datosActivosPorComuna != null && datosActivosPorComuna.Count > 0)
