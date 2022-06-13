@@ -9,6 +9,7 @@ namespace DataCovid.Resumen
     public class ActivosComuna
     {
         public string C { get; set; }
-        public List<FechaValorComuna> D { get; set; }
+        //public List<FechaValorComuna> D { get; set; }
+        public List<int> D { get; set; }
     }
 }

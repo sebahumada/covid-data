@@ -158,6 +158,9 @@ namespace DataCovid
             RespuestaActivosComuna respuestaActivosComuna = new RespuestaActivosComuna();
             respuestaActivosComuna.UpdatedAt = primeraFila[primeraFila.Length - 1];
 
+            respuestaActivosComuna.Fechas = primeraFila.Skip(5).ToList();
+
+
             List<ActivosComuna> listaActivosComuna = new List<ActivosComuna>();
 
             for (int i = 1; i < listado.Count; i++)
@@ -169,14 +172,16 @@ namespace DataCovid
                     ActivosComuna activos = new ActivosComuna();
                     activos.C = fila[3];
 
-                    List<FechaValorComuna> listadoFechaValor = new List<FechaValorComuna>();
+                    List<int>listadoFechaValor = new List<int>();
                     for (int j = 5; j < fila.Length; j++)
                     {
-                        FechaValorComuna fechaValor = new FechaValorComuna();
-                        fechaValor.F = primeraFila[j];
-                        fechaValor.V = ProcesarTexto(fila[j]);
+                        //FechaValorComuna fechaValor = new FechaValorComuna();
+                        //fechaValor.F = primeraFila[j];
+                        //fechaValor.V = ProcesarTexto(fila[j]);
 
-                        listadoFechaValor.Add(fechaValor);
+                        listadoFechaValor.Add(ProcesarTexto(fila[j]));
+
+                        //listadoFechaValor.Add(fechaValor);
                     }
 
                     activos.D = listadoFechaValor;

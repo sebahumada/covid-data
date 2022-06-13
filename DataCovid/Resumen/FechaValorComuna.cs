@@ -8,7 +8,7 @@ namespace DataCovid.Resumen
 {
     public class FechaValorComuna
     {
-        public string F { get; set; }
+        //public string F { get; set; }
         public int V { get; set; }
 
         public object Clone()
