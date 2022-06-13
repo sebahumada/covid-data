@@ -1,6 +1,6 @@
 @echo off
 C:\Proyectos\Covid\exec\DataCovid.exe
 git add .
-git commit -m "12-06-2022 upd 3"
+git commit -m "13-06-2022"
 git push
 exit
