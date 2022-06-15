@@ -15,7 +15,7 @@ namespace DataCovid
     {
         public static List<string[]>? datosActivosPorComuna;
 
-        public static List<string[]>? datosFallecidosPorComuna;
+        public static List<string[]>? datosFallecidosPorComuna;       
 
 
         public async Task<List<string[]>> GetDataAsync(string url)
@@ -71,6 +71,78 @@ namespace DataCovid
         public async Task GetFallecidosPorComuna()
         {
             var listado = await GetDataFallecidosPorComuna();
+        }
+
+        public async Task GetTotalesPorComuna()
+        {
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv";
+            var totalesComuna = await GetDataAsync(url);
+            var primeraFila = totalesComuna[0];
+
+            var totalColumnas = primeraFila.Length-1;
+
+            RespuestaTotalComuna respuestaTotalComuna = new RespuestaTotalComuna();
+            respuestaTotalComuna.UpdatedAt = primeraFila[totalColumnas - 1];
+
+            List<ComunaTotal> lista = new List<ComunaTotal>();
+
+            for(int i=1;i< totalesComuna.Count - 1; i++)
+            {
+                var fila = totalesComuna[i];
+
+                if (!string.IsNullOrEmpty(fila[3]))
+                {
+                    ComunaTotal comunaTotal = new ComunaTotal();
+                    comunaTotal.Comuna = fila[3];
+                    comunaTotal.Total = ProcesarTexto(fila[totalColumnas - 1]);
+                    lista.Add(comunaTotal);
+                }
+                    
+
+            }
+
+            respuestaTotalComuna.Lista = lista;
+
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            var json = JsonSerializer.Serialize(respuestaTotalComuna);
+
+            File.WriteAllText(path + "dataTotalesComuna.json", json);
+        }
+
+
+        public async Task GetTotalesPorRegion()
+        {
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto3/CasosTotalesCumulativo.csv";
+            var totalesRegion = await GetDataAsync(url);
+
+            string[] codigos = { "15", "01", "02", "03", "04", "05", "13", "06", "07", "16", "08", "09", "14", "10", "11", "12" };
+            
+
+            var primeraFila = totalesRegion[0];
+
+            var totalColumnas = primeraFila.Length;
+            RespuestaTotalRegion respuestaTotalRegion = new RespuestaTotalRegion();
+            respuestaTotalRegion.UpdatedAt = primeraFila[totalColumnas - 1];
+
+            List<RegionTotal> lista = new List<RegionTotal>();
+
+            for (int i=1;i< totalesRegion.Count - 1; i++)
+            {
+                var fila = totalesRegion[i];
+                RegionTotal regionTotal = new RegionTotal();
+                regionTotal.Region = codigos[i - 1];
+                regionTotal.Total = ProcesarTexto(fila[totalColumnas - 1]);
+
+                lista.Add(regionTotal);
+
+            }
+
+            respuestaTotalRegion.Lista = lista;
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            var json = JsonSerializer.Serialize(respuestaTotalRegion);
+
+            File.WriteAllText(path + "dataTotalesRegion.json", json);           
+
         }
 
 
