@@ -15,6 +15,8 @@ namespace DataCovid // Note: actual namespace depends on the project name.
             x.GetActivosPorComuna().Wait();
             x.GetTotalesPorRegion().Wait();
             x.GetTotalesPorComuna().Wait();
+            x.GetTotalFallecidosPorComuna().Wait();
+            x.GetTotalFallecidosPorRegion().Wait();
 
             Console.WriteLine("FIN PROCESO: " + DateTime.Now.ToString());
         }
