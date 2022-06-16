@@ -1,6 +1,6 @@
 @echo off
 C:\Proyectos\Covid\exec\DataCovid.exe
 git add .
-git commit -m "15-06-2022 update data fallecidos totales"
+git commit -m "16-06-2022"
 git push
 exit
