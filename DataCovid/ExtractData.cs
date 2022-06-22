@@ -85,7 +85,7 @@ namespace DataCovid
 
             List<RegionTotal> listaRegionTotal = new List<RegionTotal>();
 
-            for (int i = 1; i < totalesComuna.Count - 1; i++)
+            for (int i = 1; i < totalesComuna.Count; i++)
             {
                 var fila = totalesComuna[i];
 
@@ -116,7 +116,7 @@ namespace DataCovid
 
             List<ComunaTotal> listaComunaTotal = new List<ComunaTotal>();
 
-            for(int i = 1; i < totalesComuna.Count - 1; i++)
+            for(int i = 1; i < totalesComuna.Count; i++)
             {
                 var fila = totalesComuna[i];
 
@@ -153,7 +153,7 @@ namespace DataCovid
 
             List<ComunaTotal> lista = new List<ComunaTotal>();
 
-            for(int i=1;i< totalesComuna.Count - 1; i++)
+            for(int i=1;i< totalesComuna.Count; i++)
             {
                 var fila = totalesComuna[i];
 
