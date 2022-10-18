@@ -19,6 +19,8 @@ namespace DataCovid
 
         public static List<string[]>? datosFallecidosPorRegion;
 
+        public static List<string[]>? datosPositividadNacional;
+
         public static string[] codigos = { "15", "01", "02", "03", "04", "05", "13", "06", "07", "16", "08", "09", "14", "10", "11", "12" };
 
         public async Task<List<string[]>> GetDataAsync(string url)
@@ -72,6 +74,65 @@ namespace DataCovid
             File.WriteAllText(path + "dataFallecidosComunaUpdateAt.json", jsonUpdateAt);
 
             return datosFallecidosPorComunaYTotal;
+
+        }
+
+        public async Task<List<string[]>> GetDataPositividadNacionalDiaria()
+        {
+            if(datosPositividadNacional!=null && datosPositividadNacional.Count > 0)
+            {
+                return datosPositividadNacional;
+            }
+
+            string url = "https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto49/Positividad_Diaria_Media.csv";
+            datosPositividadNacional = await GetDataAsync(url);
+
+            var primeraFila = datosPositividadNacional[0];
+
+            UpdatedAt updated = new UpdatedAt();
+            updated.UpdatedDate = primeraFila[primeraFila.Length - 1];
+            updated.ProcessDate = DateTime.Now;
+
+
+
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            var jsonUpdateAt = JsonSerializer.Serialize(updated);
+
+            File.WriteAllText(path + "dataPositividadNacionalDiariaUpdatedAt.json", jsonUpdateAt);
+
+            return datosPositividadNacional;
+
+        }
+
+
+        public async Task GetPositividadNacionalDiaria()
+        {
+            var positividad = await GetDataPositividadNacionalDiaria();
+
+            var primeraFila = positividad[0];
+
+            PotividadNacional positividadNacional = new PotividadNacional();
+            positividadNacional.UpdatedAt = primeraFila[primeraFila.Length - 1];
+
+            List<FechaValorDec> listaFechaValorDec = new List<FechaValorDec>();
+
+            var filaPositividad = positividad[4];
+
+            for(int i = 1; i < filaPositividad.Length; i++)
+            {
+                FechaValorDec fv = new FechaValorDec();
+                fv.Fecha = primeraFila[i];
+                fv.Valor = ProcesarTextoDec(filaPositividad[i]);
+
+                listaFechaValorDec.Add(fv);
+            }
+
+            positividadNacional.Lista = listaFechaValorDec;
+
+            var path = @"C:\Proyectos\Covid\TransformData\Output\";
+            var jsonUpdateAt = JsonSerializer.Serialize(positividadNacional);
+
+            File.WriteAllText(path + "dataPositividadNacionalDiaria.json", jsonUpdateAt);
 
         }
 
@@ -573,6 +634,13 @@ namespace DataCovid
             if (string.IsNullOrEmpty(valor)) return 0;
 
             return Convert.ToInt32(valor.Replace(".0", string.Empty));
+        }
+
+        public static decimal ProcesarTextoDec(string valor)
+        {
+            if (string.IsNullOrEmpty(valor)) return 0;
+
+            return Math.Round((Convert.ToDecimal(valor.Replace(".",",")))*100,2);
         }
 
         public static string ShortDate(string valor)
